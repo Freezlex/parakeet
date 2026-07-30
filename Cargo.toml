@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [
+    "packages/web",
+    "packages/desktop",
+    "packages/mobile",
+    "crates/ui", "crates/app", "crates/infra-matrix-fake", "crates/infra-memory-store", "crates/kit-arch", "crates/ports", "crates/schema-matrix",
+]
+
+[workspace.dependencies]
+dioxus = { version = "0.7.1" }
+
+# workspace
+ui = { path = "crates/ui" }
+
