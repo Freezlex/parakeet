@@ -1,6 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use domain::{MessageId, ShortTag, SmsRowId};
+use ports::Clock;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Activity {
     Composed { id: MessageId, body: String },
@@ -59,32 +61,60 @@ impl Activity {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActivityEntry {
+    pub ts: u64,
+    pub activity: Activity,
+}
+
+impl ActivityEntry {
+    pub fn summary(&self) -> String {
+        self.activity.summary()
+    }
+}
+
+#[derive(Clone)]
 pub struct ActivityLog {
-    entries: Arc<Mutex<Vec<Activity>>>,
+    clock: Arc<dyn Clock>,
+    entries: Arc<Mutex<Vec<ActivityEntry>>>,
+}
+
+impl std::fmt::Debug for ActivityLog {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ActivityLog")
+            .field("entries", &self.entries)
+            .finish_non_exhaustive()
+    }
 }
 
 const CAPACITY: usize = 200;
 
 impl ActivityLog {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(clock: Arc<dyn Clock>) -> Self {
+        ActivityLog {
+            clock,
+            entries: Arc::new(Mutex::new(Vec::new())),
+        }
     }
 
     pub fn record(&self, activity: Activity) {
         let mut guard = self.entries.lock().expect("activity log lock");
-        guard.push(activity);
+        guard.push(ActivityEntry {
+            ts: self.clock.now_ms(),
+            activity,
+        });
         let overflow = guard.len().saturating_sub(CAPACITY);
         if overflow > 0 {
             guard.drain(..overflow);
         }
     }
 
-    pub fn entries(&self) -> Vec<Activity> {
+    pub fn entries(&self) -> Vec<ActivityEntry> {
         self.entries.lock().expect("activity log lock").clone()
     }
 
-    pub fn recent(&self, limit: usize) -> Vec<Activity> {
+    /// Newest first, by recording order (ties in `ts` keep insertion order).
+    pub fn recent(&self, limit: usize) -> Vec<ActivityEntry> {
         let guard = self.entries.lock().expect("activity log lock");
         guard.iter().rev().take(limit).cloned().collect()
     }
@@ -97,10 +127,11 @@ impl ActivityLog {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use infra_memory_store::ManualClock;
 
     #[test]
     fn the_log_keeps_the_newest_entries() {
-        let log = ActivityLog::new();
+        let log = ActivityLog::new(Arc::new(ManualClock::new(0)));
         for i in 0..CAPACITY + 10 {
             log.record(Activity::ReceivedMatrix {
                 tag: ShortTag::from_u64(i as u64),
@@ -109,7 +140,7 @@ mod tests {
         let entries = log.entries();
         assert_eq!(entries.len(), CAPACITY);
         assert_eq!(
-            entries[0],
+            entries[0].activity,
             Activity::ReceivedMatrix {
                 tag: ShortTag::from_u64(10)
             }
@@ -118,14 +149,17 @@ mod tests {
 
     #[test]
     fn recent_returns_newest_first() {
-        let log = ActivityLog::new();
+        let log = ActivityLog::new(Arc::new(ManualClock::new(0)));
         for i in 0..3 {
             log.record(Activity::ReceivedMatrix {
                 tag: ShortTag::from_u64(i),
             });
         }
         assert_eq!(
-            log.recent(2),
+            log.recent(2)
+                .into_iter()
+                .map(|entry| entry.activity)
+                .collect::<Vec<_>>(),
             vec![
                 Activity::ReceivedMatrix {
                     tag: ShortTag::from_u64(2)

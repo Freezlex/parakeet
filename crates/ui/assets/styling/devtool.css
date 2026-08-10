@@ -13,7 +13,7 @@
     --reconciled: #a78bfa;
     --danger: #f36868;
 
-    max-width: 720px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 12px 14px 48px;
     color: var(--text);
@@ -22,7 +22,6 @@
     line-height: 1.45;
 }
 
-/* ---- header ------------------------------------------------------------ */
 
 .app-header {
     display: flex;
@@ -62,25 +61,42 @@
     color: var(--sms);
 }
 
-/* ---- conversation list -------------------------------------------------- */
 
-.conversations {
+.demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.1fr;
+    align-items: start;
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .demo-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.device-screen {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+.device-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.conversation-row {
+.device-header > div {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    cursor: pointer;
-}
-
-.conversation-row.active {
-    border-color: var(--accent);
+    min-width: 0;
 }
 
 .avatar {
@@ -95,11 +111,10 @@
     font-weight: 700;
 }
 
-.conversation-text {
+.device-text {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    flex: 1;
 }
 
 .preview {
@@ -109,20 +124,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-.conversation-side {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-}
-
-.pending-count {
-    font-size: 11px;
-    color: var(--sms);
-}
-
-/* ---- thread ------------------------------------------------------------- */
 
 .thread {
     display: flex;
@@ -223,8 +224,6 @@
     opacity: 0.75;
 }
 
-/* ---- composer ----------------------------------------------------------- */
-
 .composer {
     display: flex;
     gap: 8px;
@@ -269,50 +268,19 @@
     color: var(--sms);
 }
 
-/* ---- dev panel ---------------------------------------------------------- */
-
-.dev-panel {
-    margin-top: 22px;
-    padding-top: 16px;
-    border-top: 1px dashed var(--line);
+.resolution-panel {
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
 }
 
-.dev-panel h2 {
-    margin: 0 0 8px;
+.resolution-panel h2 {
+    margin: 0 0 12px;
     font-size: 15px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted);
-}
-
-.scripts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 22px;
-    margin-bottom: 14px;
-}
-
-.scripts > div {
-    flex: 1 1 280px;
-    min-width: 0;
-}
-
-.scripts h4 {
-    margin: 0 0 4px;
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 600;
-}
-
-.script {
-    margin: 0;
-    padding-left: 20px;
-    color: var(--muted);
-    font-size: 12.5px;
-}
-
-.script li {
-    margin-bottom: 3px;
 }
 
 .control-group {
@@ -330,38 +298,6 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--muted);
-}
-
-.as-peer {
-    display: flex;
-    flex: 1 1 260px;
-    min-width: 0;
-    gap: 6px;
-}
-
-.as-peer input {
-    flex: 1;
-    min-width: 0;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    background: var(--surface-2);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-}
-
-.as-peer button {
-    padding: 6px 12px;
-    border: 1px solid var(--reconciled);
-    border-radius: 8px;
-    background: var(--surface-2);
-    color: var(--reconciled);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
 }
 
 .sms-dir {

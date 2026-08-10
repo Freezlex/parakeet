@@ -42,13 +42,6 @@ impl DemoDevice {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DemoContact {
-    pub peer: PeerId,
-    pub display_name: String,
-    pub phone: String,
-}
-
 pub struct DemoWorld {
     pub homeserver: FakeHomeserver,
     pub carrier: FakeSmsNetwork,
@@ -80,22 +73,6 @@ impl DemoWorld {
             carrier,
             alice,
             bob,
-        }
-    }
-
-    pub fn contacts(&self) -> Vec<DemoContact> {
-        vec![DemoContact {
-            peer: self.bob.me.clone(),
-            display_name: self.bob.name.clone(),
-            phone: BOB_PHONE.to_owned(),
-        }]
-    }
-
-    pub fn peer_sms_storage(&self, peer: &PeerId) -> Vec<StoredSms> {
-        if peer == &self.bob.me {
-            self.bob.sms_storage()
-        } else {
-            Vec::new()
         }
     }
 
