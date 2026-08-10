@@ -1,5 +1,6 @@
 mod home;
+mod devtool;
+
 pub use home::Home;
 
-mod blog;
-pub use blog::Blog;
+pub use devtool::DevTool;

@@ -5,3 +5,10 @@ edition = "2024"
 
 [dependencies]
 dioxus = { workspace = true }
+
+app = { workspace = true }
+domain = { workspace = true }
+infra-matrix-fake = { workspace = true }
+infra-memory-store = { workspace = true }
+infra-sms-fake = { workspace = true }
+ports = { workspace = true }

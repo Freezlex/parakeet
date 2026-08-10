@@ -4,12 +4,32 @@ members = [
     "packages/web",
     "packages/desktop",
     "packages/mobile",
-    "crates/ui", "crates/app", "crates/infra-matrix-fake", "crates/infra-memory-store", "crates/kit-arch", "crates/ports", "crates/schema-matrix",
+    "crates/ui",
+    "crates/app",
+    "crates/domain",
+    "crates/infra-matrix-fake",
+    "crates/infra-memory-store",
+    "crates/infra-sms-fake",
+    "crates/kit-arch",
+    "crates/ports",
+    "crates/schema-matrix",
 ]
 
 [workspace.dependencies]
 dioxus = { version = "0.7.1" }
 
-# workspace
-ui = { path = "crates/ui" }
+# external
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
+# workspace
+app = { path = "crates/app" }
+domain = { path = "crates/domain" }
+infra-matrix-fake = { path = "crates/infra-matrix-fake" }
+infra-memory-store = { path = "crates/infra-memory-store" }
+infra-sms-fake = { path = "crates/infra-sms-fake" }
+kit-arch = { path = "crates/kit-arch" }
+ports = { path = "crates/ports" }
+schema-matrix = { path = "crates/schema-matrix" }
+ui = { path = "crates/ui" }

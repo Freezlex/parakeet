@@ -4,3 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+async-trait = { workspace = true }
+domain = { workspace = true }
+ports = { workspace = true }
+schema-matrix = { workspace = true }
+
+[dev-dependencies]
+kit-arch = { workspace = true }
