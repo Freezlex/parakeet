@@ -1,29 +1,48 @@
 mod bubble;
 mod composer;
-mod conversations;
-mod dev_panel;
+mod device_screen;
+mod resolution_panel;
 mod thread;
 pub mod demo;
 
 pub use bubble::MessageBubble;
 pub use composer::Composer;
-pub use conversations::ConversationList;
-pub use dev_panel::DevPanel;
+pub use device_screen::DeviceScreen;
+pub use resolution_panel::ResolutionPanel;
 pub use thread::Thread;
 
 use std::sync::Arc;
 
 use dioxus::prelude::*;
-use domain::PeerId;
 
-use demo::DemoWorld;
+use demo::{DemoDevice, DemoWorld};
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Side {
+    Alice,
+    Bob,
+}
+
+impl Side {
+    pub fn device(self, world: &DemoWorld) -> &DemoDevice {
+        match self {
+            Side::Alice => &world.alice,
+            Side::Bob => &world.bob,
+        }
+    }
+
+    pub fn other(self, world: &DemoWorld) -> &DemoDevice {
+        match self {
+            Side::Alice => &world.bob,
+            Side::Bob => &world.alice,
+        }
+    }
+}
 
 #[derive(Clone, Copy)]
 pub struct DemoState {
     pub world: Signal<Arc<DemoWorld>>,
     pub revision: Signal<u64>,
-
-    pub selected: Signal<PeerId>,
 
     pub auto_sync_peer: Signal<bool>,
 }
@@ -33,46 +52,24 @@ impl DemoState {
         self.world.peek().clone()
     }
 
-    pub fn peer(&self) -> PeerId {
-        self.selected.peek().clone()
-    }
-
     pub fn touch(&mut self) {
         *self.revision.write() += 1;
     }
 }
 
+const DEVTOOL_CSS: Asset = asset!("/assets/styling/devtool.css");
+
 #[component]
 pub fn ChatScreen() -> Element {
     let world = use_hook(|| Signal::new(Arc::new(DemoWorld::new())));
-    let state = use_context_provider(|| DemoState {
+    use_context_provider(|| DemoState {
         world,
         revision: Signal::new(0),
-        selected: Signal::new(world.peek().bob.me.clone()),
         auto_sync_peer: Signal::new(true),
     });
 
-    let messages = use_memo(move || {
-        state.revision.read();
-        state.world().alice.messages(&state.selected.read().clone())
-    });
-
-    let on_send = move |text: String| {
-        let world = state.world();
-        let peer = state.peer();
-        let auto_sync_peer = state.auto_sync_peer;
-        let mut state = state;
-        spawn(async move {
-            world.alice.client.send(&peer, &text).await;
-            if *auto_sync_peer.peek() {
-                world.bob.client.sync().await;
-            }
-            world.alice.client.sync().await;
-            state.touch();
-        });
-    };
-
     rsx! {
+        document::Link { rel: "stylesheet", href: DEVTOOL_CSS }
         div { id: "parakeet",
             header { class: "app-header",
                 div {
@@ -81,10 +78,11 @@ pub fn ChatScreen() -> Element {
                 }
                 ConnectionPill {}
             }
-            ConversationList {}
-            Thread { messages: messages() }
-            Composer { on_send }
-            DevPanel {}
+            div { class: "demo-grid",
+                DeviceScreen { side: Side::Alice }
+                DeviceScreen { side: Side::Bob }
+                ResolutionPanel {}
+            }
         }
     }
 }
@@ -94,13 +92,13 @@ fn ConnectionPill() -> Element {
     let state = use_context::<DemoState>();
     let online = use_memo(move || {
         state.revision.read();
-        state.world().alice.is_online()
+        state.world().server_is_up()
     });
 
     rsx! {
         span {
             class: if online() { "pill pill-online" } else { "pill pill-offline" },
-            if online() { "online" } else { "offline" }
+            if online() { "homeserver up" } else { "homeserver down" }
         }
     }
 }

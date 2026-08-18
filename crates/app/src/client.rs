@@ -43,6 +43,7 @@ pub struct ClientParts {
 
 impl Client {
     pub fn new(parts: ClientParts) -> Self {
+        let log = ActivityLog::new(parts.clock.clone());
         Client {
             me: parts.me,
             matrix: parts.matrix,
@@ -52,7 +53,7 @@ impl Client {
             clock: parts.clock,
             ids: parts.ids,
             directory: parts.directory,
-            log: ActivityLog::new(),
+            log,
         }
     }
 

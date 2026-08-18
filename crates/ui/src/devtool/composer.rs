@@ -1,29 +1,22 @@
 use dioxus::prelude::*;
 use domain::sms_frame::TRAILER_CHARS;
 
-use super::DemoState;
+use super::{DemoState, Side};
 
 const SMS_SEGMENT_CHARS: usize = 160;
 
 #[component]
-pub fn Composer(on_send: EventHandler<String>) -> Element {
+pub fn Composer(side: Side, on_send: EventHandler<String>) -> Element {
     let state = use_context::<DemoState>();
     let mut draft = use_signal(String::new);
 
     let online = use_memo(move || {
         state.revision.read();
-        state.world().alice.is_online()
+        side.device(&state.world()).is_online()
     });
     let peer_name = use_memo(move || {
         state.revision.read();
-        let peer = state.selected.read().clone();
-        state
-            .world()
-            .contacts()
-            .into_iter()
-            .find(|c| c.peer == peer)
-            .map(|c| c.display_name)
-            .unwrap_or_else(|| peer.as_str().to_owned())
+        side.other(&state.world()).name.clone()
     });
 
     let submit = move |_| {
